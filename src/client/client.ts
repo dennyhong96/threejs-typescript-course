@@ -3,6 +3,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
+import { GUI } from "dat.gui";
 
 // a scene sets up what is to be rendered by THREE.js and where it is in 3D coords
 // we can then add objects and lightings into a scene
@@ -53,6 +54,17 @@ function onWindowResize() {
 // Stats panel (useful in dev mode)
 const stats = Stats();
 document.body.appendChild(stats.domElement);
+
+// GUI adds a basic UI to interact with the 3d scene and the objects within it.
+const gui = new GUI();
+const cubeFolder = gui.addFolder("Cube"); // for grouping controls
+cubeFolder.add(cube.rotation, "x", 0, Math.PI * 2);
+cubeFolder.add(cube.rotation, "y", 0, Math.PI * 2);
+cubeFolder.add(cube.rotation, "z", 0, Math.PI * 2);
+cubeFolder.open(); // group is default open
+const cameraFolder = gui.addFolder("Camera");
+cameraFolder.add(camera.position, "z", 0, 20);
+cameraFolder.open();
 
 function animate() {
   // requestAnimationFrame tells the browser to to perform an animation
