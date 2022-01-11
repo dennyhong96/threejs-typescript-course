@@ -2,6 +2,7 @@
 // then help convert 3 dimensions data into 3d representation onto a <canvas/>
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import Stats from "three/examples/jsm/libs/stats.module";
 
 // a scene sets up what is to be rendered by THREE.js and where it is in 3D coords
 // we can then add objects and lightings into a scene
@@ -26,7 +27,7 @@ document.body.appendChild(renderer.domElement); // renderer.domElement is the <c
 // console.dir(renderer.domElement);
 
 const control = new OrbitControls(camera, renderer.domElement);
-control.addEventListener("change", render);
+// control.addEventListener("change", render);
 // if OrbitControls doesn't have it's own change handler,
 // it needs render to be called in animate to work
 
@@ -49,15 +50,25 @@ function onWindowResize() {
   render();
 }
 
+// Stats panel (useful in dev mode)
+const stats = Stats();
+document.body.appendChild(stats.domElement);
+
 function animate() {
   // requestAnimationFrame tells the browser to to perform an animation
   // and requests that the browser invokes the callback to update
   // an animation before next repaint. callback in invoked about 60times/sec
   requestAnimationFrame(animate);
 
+  // stats.begin() && stats.end() measure perf of operations in between
+  // stats.begin();
   cube.rotation.x += 0.01;
   cube.rotation.y += 0.01;
+  // stats.end();
+
   render();
+
+  stats.update();
 }
 
 function render() {
