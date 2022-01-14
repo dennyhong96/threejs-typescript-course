@@ -22,7 +22,9 @@ class App {
     // we can then add objects and lightings into a scene
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color("#333");
+    this.scene.add(new THREE.AxesHelper(5));
     console.dir(this.scene);
+    // Everything that can be displayed into a 3D space extends Object3D class, scene,camera,mesh,etc.
 
     // a camera describes the view boundaries of the scene
     // perspective camera mimics the way human eye sees
@@ -68,9 +70,22 @@ class App {
 
   private addGui(): void {
     const cubeFolder = this.gui.addFolder("Cube"); // for grouping controls
-    cubeFolder.add(this.cube.rotation, "x", 0, Math.PI * 2);
-    cubeFolder.add(this.cube.rotation, "y", 0, Math.PI * 2);
-    cubeFolder.add(this.cube.rotation, "z", 0, Math.PI * 2);
+    cubeFolder.add(this.cube, "visible");
+    const cubeRotationFolder = cubeFolder.addFolder("Rotation");
+    cubeRotationFolder.add(this.cube.rotation, "x", 0, Math.PI * 2);
+    cubeRotationFolder.add(this.cube.rotation, "y", 0, Math.PI * 2);
+    cubeRotationFolder.add(this.cube.rotation, "z", 0, Math.PI * 2);
+    cubeRotationFolder.open(); // group is default open
+    const cubePositionFolder = cubeFolder.addFolder("Position");
+    cubePositionFolder.add(this.cube.position, "x", -10, 10, 0.1);
+    cubePositionFolder.add(this.cube.position, "y", -10, 10, 0.1);
+    cubePositionFolder.add(this.cube.position, "z", -10, 10, 0.1);
+    cubePositionFolder.open();
+    const cubeScaleFolder = cubeFolder.addFolder("Scale");
+    cubeScaleFolder.add(this.cube.scale, "x", -5, 5);
+    cubeScaleFolder.add(this.cube.scale, "y", -5, 5);
+    cubeScaleFolder.add(this.cube.scale, "z", -5, 5);
+    cubeScaleFolder.open();
     cubeFolder.open(); // group is default open
     const cameraFolder = this.gui.addFolder("Camera");
     cameraFolder.add(this.camera.position, "z", 0, 20);
@@ -97,8 +112,8 @@ class App {
 
     // stats.begin() && stats.end() measure perf of operations in between
     // this.stats.begin();
-    this.cube.rotation.x += 0.01;
-    this.cube.rotation.y += 0.01;
+    // this.cube.rotation.x += 0.01;
+    // this.cube.rotation.y += 0.01;
     // this.stats.end();
 
     this.render();
