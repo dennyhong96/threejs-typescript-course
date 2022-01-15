@@ -1,125 +1,206 @@
-// THREE.js helps add and descirbe data in 3 dimensions (as meshes & lights)
-// then help convert 3 dimensions data into 3d representation onto a <canvas/>
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Stats from "three/examples/jsm/libs/stats.module";
 import { GUI } from "dat.gui";
 
-class App {
-  private scene: THREE.Scene;
-  private camera: THREE.PerspectiveCamera;
-  private renderer: THREE.WebGLRenderer;
+const scene = new THREE.Scene();
+scene.add(new THREE.AxesHelper(5));
 
-  private control: OrbitControls;
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.x = -2;
+camera.position.y = 4;
+camera.position.z = 5;
 
-  private cube: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>;
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-  private stats: Stats;
-  private gui: GUI;
+new OrbitControls(camera, renderer.domElement);
 
-  constructor() {
-    // a scene sets up what is to be rendered by THREE.js and where it is in 3D coords
-    // we can then add objects and lightings into a scene
-    this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color("#333");
-    this.scene.add(new THREE.AxesHelper(5));
-    console.dir(this.scene);
-    // Everything that can be displayed into a 3D space extends Object3D class, scene,camera,mesh,etc.
+const boxGeometry = new THREE.BoxGeometry();
+console.log(boxGeometry);
+const sphereGeometry = new THREE.SphereGeometry();
+const icosahedronGeometry = new THREE.IcosahedronGeometry();
 
-    // a camera describes the view boundaries of the scene
-    // perspective camera mimics the way human eye sees
-    // closer objects appears larger, furthur objects appears smaller
-    this.camera = new THREE.PerspectiveCamera(
-      75, // fov
-      window.innerWidth / window.innerHeight, // aspect ratio
-      0.1, // near clipping plane
-      1000 // far clipping plane
-    );
-    this.camera.position.z = 2;
+const material = new THREE.MeshBasicMaterial({
+  color: 0x00ff00,
+  wireframe: true,
+});
 
-    // a renderer displays the scene onto a HTML canvas element
-    this.renderer = new THREE.WebGLRenderer(); // WebGL allows GPU-accelerated image processing
-    this.renderer.setSize(window.innerWidth, window.innerHeight); // must set a size for WebGL renderer
-    document.body.appendChild(this.renderer.domElement); // renderer.domElement is the <canvas/> element
-    // console.dir(this.renderer.domElement);
+const cube = new THREE.Mesh(boxGeometry, material);
+cube.position.x = 5;
+scene.add(cube);
 
-    this.control = new OrbitControls(this.camera, this.renderer.domElement);
-    // this.control.addEventListener("change", render);
-    // if OrbitControls doesn't have it's own change handler,
-    // it needs render to be called in animate to work
+const sphere = new THREE.Mesh(sphereGeometry, material);
+sphere.position.x = -5;
+scene.add(sphere);
 
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({
-      color: 0x00ff00,
-      wireframe: true,
-    });
-    this.cube = new THREE.Mesh(geometry, material);
-    this.scene.add(this.cube);
+const icosahedron = new THREE.Mesh(icosahedronGeometry, material);
+scene.add(icosahedron);
 
-    // Stats panel (useful in dev mode)
-    this.stats = Stats();
-    document.body.appendChild(this.stats.domElement);
-
-    // GUI adds a basic UI to interact with the 3d scene and the objects within it.
-    this.gui = new GUI();
-    this.addGui();
-
-    window.addEventListener("resize", this.handleResize.bind(this), false);
-    this.animate();
-  }
-
-  private addGui(): void {
-    const cubeFolder = this.gui.addFolder("Cube"); // for grouping controls
-    cubeFolder.add(this.cube, "visible");
-    const cubeRotationFolder = cubeFolder.addFolder("Rotation");
-    cubeRotationFolder.add(this.cube.rotation, "x", 0, Math.PI * 2);
-    cubeRotationFolder.add(this.cube.rotation, "y", 0, Math.PI * 2);
-    cubeRotationFolder.add(this.cube.rotation, "z", 0, Math.PI * 2);
-    cubeRotationFolder.open(); // group is default open
-    const cubePositionFolder = cubeFolder.addFolder("Position");
-    cubePositionFolder.add(this.cube.position, "x", -10, 10, 0.1);
-    cubePositionFolder.add(this.cube.position, "y", -10, 10, 0.1);
-    cubePositionFolder.add(this.cube.position, "z", -10, 10, 0.1);
-    cubePositionFolder.open();
-    const cubeScaleFolder = cubeFolder.addFolder("Scale");
-    cubeScaleFolder.add(this.cube.scale, "x", -5, 5);
-    cubeScaleFolder.add(this.cube.scale, "y", -5, 5);
-    cubeScaleFolder.add(this.cube.scale, "z", -5, 5);
-    cubeScaleFolder.open();
-    cubeFolder.open(); // group is default open
-    const cameraFolder = this.gui.addFolder("Camera");
-    cameraFolder.add(this.camera.position, "z", 0, 20);
-    cameraFolder.open();
-  }
-
-  private handleResize(): void {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.render();
-  }
-
-  private render(): void {
-    this.renderer.render(this.scene, this.camera);
-  }
-
-  // animate() commonly called "the game loop" in game development
-  private animate(): void {
-    // requestAnimationFrame tells the browser to to perform an animation
-    // and requests that the browser invokes the callback to update
-    // an animation before next repaint. callback in invoked about 60times/sec
-    requestAnimationFrame(this.animate.bind(this));
-
-    // stats.begin() && stats.end() measure perf of operations in between
-    // this.stats.begin();
-    // this.cube.rotation.x += 0.01;
-    // this.cube.rotation.y += 0.01;
-    // this.stats.end();
-
-    this.render();
-
-    this.stats.update();
-  }
+window.addEventListener("resize", onWindowResize, false);
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  render();
 }
 
-new App();
+const stats = Stats();
+document.body.appendChild(stats.dom);
+
+const gui = new GUI();
+const cubeFolder = gui.addFolder("Cube");
+const cubeRotationFolder = cubeFolder.addFolder("Rotation");
+cubeRotationFolder.add(cube.rotation, "x", 0, Math.PI * 2, 0.01);
+cubeRotationFolder.add(cube.rotation, "y", 0, Math.PI * 2, 0.01);
+cubeRotationFolder.add(cube.rotation, "z", 0, Math.PI * 2, 0.01);
+const cubePositionFolder = cubeFolder.addFolder("Position");
+cubePositionFolder.add(cube.position, "x", -10, 10);
+cubePositionFolder.add(cube.position, "y", -10, 10);
+cubePositionFolder.add(cube.position, "z", -10, 10);
+
+// Scale changes the transformation matrix, not the actual points of the geometry
+// https://en.wikipedia.org/wiki/Transformation_matrix
+const cubeScaleFolder = cubeFolder.addFolder("Scale");
+cubeScaleFolder.add(cube.scale, "x", -5, 5, 0.1); //.onFinishChange(() => console.dir(cube.geometry))
+cubeScaleFolder.add(cube.scale, "y", -5, 5, 0.1);
+cubeScaleFolder.add(cube.scale, "z", -5, 5, 0.1);
+cubeFolder.add(cube, "visible", true);
+cubeFolder.open();
+
+const cubeData = {
+  width: 1,
+  height: 1,
+  depth: 1,
+  widthSegments: 1,
+  heightSegments: 1,
+  depthSegments: 1,
+};
+const cubePropertiesFolder = cubeFolder.addFolder("Properties");
+cubePropertiesFolder
+  .add(cubeData, "width", 1, 30)
+  .onChange(regenerateBoxGeometry)
+  .onFinishChange(() => console.dir(cube.geometry));
+cubePropertiesFolder
+  .add(cubeData, "height", 1, 30)
+  .onChange(regenerateBoxGeometry);
+cubePropertiesFolder
+  .add(cubeData, "depth", 1, 30)
+  .onChange(regenerateBoxGeometry);
+cubePropertiesFolder
+  .add(cubeData, "widthSegments", 1, 30)
+  .onChange(regenerateBoxGeometry);
+cubePropertiesFolder
+  .add(cubeData, "heightSegments", 1, 30)
+  .onChange(regenerateBoxGeometry);
+cubePropertiesFolder
+  .add(cubeData, "depthSegments", 1, 30)
+  .onChange(regenerateBoxGeometry);
+
+function regenerateBoxGeometry() {
+  const newGeometry = new THREE.BoxGeometry(
+    cubeData.width,
+    cubeData.height,
+    cubeData.depth,
+    cubeData.widthSegments,
+    cubeData.heightSegments,
+    cubeData.depthSegments
+  );
+  cube.geometry.dispose(); // Disposes the object from memory. You need to call this when you want the bufferGeometry removed while the application is running.
+  cube.geometry = newGeometry;
+}
+
+const sphereData = {
+  radius: 1,
+  widthSegments: 8,
+  heightSegments: 6,
+  phiStart: 0,
+  phiLength: Math.PI * 2,
+  thetaStart: 0,
+  thetaLength: Math.PI,
+};
+const sphereFolder = gui.addFolder("Sphere");
+const spherePropertiesFolder = sphereFolder.addFolder("Properties");
+spherePropertiesFolder
+  .add(sphereData, "radius", 0.1, 30)
+  .onChange(regenerateSphereGeometry);
+spherePropertiesFolder
+  .add(sphereData, "widthSegments", 1, 32)
+  .onChange(regenerateSphereGeometry);
+spherePropertiesFolder
+  .add(sphereData, "heightSegments", 1, 16)
+  .onChange(regenerateSphereGeometry);
+spherePropertiesFolder
+  .add(sphereData, "phiStart", 0, Math.PI * 2)
+  .onChange(regenerateSphereGeometry);
+spherePropertiesFolder
+  .add(sphereData, "phiLength", 0, Math.PI * 2)
+  .onChange(regenerateSphereGeometry);
+spherePropertiesFolder
+  .add(sphereData, "thetaStart", 0, Math.PI)
+  .onChange(regenerateSphereGeometry);
+spherePropertiesFolder
+  .add(sphereData, "thetaLength", 0, Math.PI)
+  .onChange(regenerateSphereGeometry);
+
+function regenerateSphereGeometry() {
+  const newGeometry = new THREE.SphereGeometry(
+    sphereData.radius,
+    sphereData.widthSegments,
+    sphereData.heightSegments,
+    sphereData.phiStart,
+    sphereData.phiLength,
+    sphereData.thetaStart,
+    sphereData.thetaLength
+  );
+  sphere.geometry.dispose();
+  sphere.geometry = newGeometry;
+}
+
+const icosahedronData = {
+  radius: 1,
+  detail: 0,
+};
+const icosahedronFolder = gui.addFolder("Icosahedron");
+const icosahedronPropertiesFolder = icosahedronFolder.addFolder("Properties");
+icosahedronPropertiesFolder
+  .add(icosahedronData, "radius", 0.1, 10)
+  .onChange(regenerateIcosahedronGeometry);
+icosahedronPropertiesFolder
+  .add(icosahedronData, "detail", 0, 5)
+  .step(1)
+  .onChange(regenerateIcosahedronGeometry);
+
+function regenerateIcosahedronGeometry() {
+  const newGeometry = new THREE.IcosahedronGeometry(
+    icosahedronData.radius,
+    icosahedronData.detail
+  );
+  icosahedron.geometry.dispose();
+  icosahedron.geometry = newGeometry;
+}
+
+const debug = document.getElementById("debug1") as HTMLDivElement;
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  render();
+
+  debug.innerText =
+    "Matrix\n" + cube.matrix.elements.toString().replace(/,/g, "\n");
+
+  stats.update();
+}
+
+function render() {
+  renderer.render(scene, camera);
+}
+
+animate();
